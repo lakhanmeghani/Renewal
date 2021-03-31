@@ -5,26 +5,51 @@ public class RenewalOpportunityInvocableClass {
         List<Opportunity> opportunityList = [SELECT Id,Name, OwnerId,RecordTypeId, AccountId, Renewal_Start_Date__c, Renewal_Period__c,IsRenewal__c, Frequency__c, StageName,
                                              Solutions_Services__c, Products__c,New_Lead_Source__c, CloseDate, Amount, Region__c, NextStep, Parent_Opportunity__c, type,
                                              Proposal_Date__c, Q1_Accrued_Value__c, Q2_Accrued_Value__c, Q3_Accrued_Value__c, Q4_Accrued_Value__c, Contact_Role__c, Range__c,
-                                             Opportunity_Type__c
+                                             Opportunity_Type__c, Renewal__c
                                              FROM Opportunity WHERE id IN : OpportunityIds];
         system.debug(''+opportunityList);
         for(Opportunity opp:opportunityList){
             system.debug('Inside for');
             for(Integer i=0;i<opp.Frequency__c;i++) {
                 system.debug('Inside i');
+               
+                
                 Opportunity renewal = new Opportunity();
                 renewal.RecordTypeId = opp.RecordTypeId;
                 renewal.StageName = 'Contracts & Launch';
                 renewal.OwnerId = opp.OwnerId;
                 renewal.Parent_Opportunity__c = opp.Id;
                 renewal.AccountId = opp.AccountId;
-                renewal.Name = 'Renewal' + '' + opp.Name + '' + (i+1);
+                renewal.Name = 'Renewal' + ' ' + opp.Name + ' ' + (i+1);
                 renewal.Type = 'Renewal';
                 renewal.Solutions_Services__c = opp.Solutions_Services__c;
                 renewal.Products__c = opp.Products__c;
                 renewal.New_Lead_Source__c = opp.New_Lead_Source__c;
-                renewal.CloseDate = opp.CloseDate;
+                
+                if(opp.Renewal_Period__c == 'Monthly') {
+                    renewal.CloseDate = opp.CloseDate.addMonths(i+1) - 15;
+                    system.debug(''+renewal.CloseDate);
+                } 
+                else if(opp.Renewal_Period__c == 'Quarterly') {
+                    renewal.CloseDate = opp.CloseDate.addMonths((i+1)*3) - 15;
+                    system.debug(''+renewal.CloseDate);
+                } 
+                else if(opp.Renewal_Period__c == 'Half Yearly') {
+                    renewal.CloseDate = opp.CloseDate.addMonths((i+1)*6) - 15;
+                    system.debug(''+renewal.CloseDate);
+                } 
+                else if(opp.Renewal_Period__c == 'Yearly') {
+                    renewal.CloseDate = opp.CloseDate.addMonths((i+1)*12) - 15;
+                    system.debug(''+renewal.CloseDate);
+                } 
+                 else if(opp.Renewal_Period__c == 'Two Years') {
+                    renewal.CloseDate = opp.CloseDate.addMonths((i+1)*24) - 15;
+                    system.debug(''+renewal.CloseDate);
+                } 
+                renewal.Renewal_Period__c = opp.Renewal_Period__c;
+              //  renewal.Renewal_Start_Date__c = renewal.CloseDate + 1;
                 renewal.Amount = opp.Amount;
+                renewal.Renewal__c = True;
                 renewal.Region__c = opp.Region__c;
                 renewal.NextStep = opp.NextStep;
                 renewal.Proposal_Date__c = opp.Proposal_Date__c;
